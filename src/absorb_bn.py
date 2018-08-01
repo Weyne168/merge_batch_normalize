@@ -305,46 +305,6 @@ def main(args):
     net.save(args.output_weights)  
 
 
-def test4seg(args):
-    pro_threshold = 0.8
-    img_path = '/home/guoweiyu/workspace/PeopleSeg/debug/cs.jpg'
-    input_width = 100
-    input_height = 150
-    mean = np.array([104.008, 116.669, 122.675])
-    
-    im = cv2.imread(img_path)
-    h, w = im.shape[:2]
-    im = cv2.resize(im, (input_width, input_height))
-    im = im - mean
-    im = im.transpose((2, 0, 1))
-    net_file = '/home/guoweiyu/workspace/PeopleSeg/debug/psg_mob_32.prototxt' 
-    caffe_model = '/home/guoweiyu/workspace/PeopleSeg/debug/psg_mob_32.caffemodel'
-    
-    net_file = '/home/guoweiyu/workspace/PeopleSeg/debug/psg_half_32bn_inference.prototxt' 
-    caffe_model = '/home/guoweiyu/workspace/PeopleSeg/debug/psg_half_32bn_inference.caffemodel'
-    
-    if args.output_model is None:  
-        file_name = osp.splitext(args.model)[0]  
-        net_file = file_name + '_inference.prototxt'  
-    if args.output_weights is None:  
-        file_name = osp.splitext(args.weights)[0]  
-        caffe_model = file_name + '_inference.caffemodel'
-    
-    print net_file, caffe_model
-    net = caffe.Net(net_file, caffe_model, caffe.TEST)
-    net.blobs['data'].data[...] = im
-    out = net.forward()
-    
-    #pred_img = out['ConvNdBackward72'].reshape((input_height, input_width))
-    pred_img = out['BatchNormBackward42'].reshape((input_height, input_width))
-    pred_img = cv2.resize(pred_img, (w , h))
-    temp1 = np.zeros((h , w , 3), dtype=np.uint8)
-    
-    temp1[:, :, 0][pred_img > pro_threshold] = 255
-    temp1[:, :, 1][pred_img > pro_threshold] = 255
-    temp1[:, :, 2][pred_img > pro_threshold] = 255
-    cv2.imwrite(os.path.join('../debug', 'debug.jpg'), temp1)   
-    
 
 if __name__ == '__main__':  
     parser = ArgumentParser(
